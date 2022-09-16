@@ -1,0 +1,25 @@
+<div>
+  <div class="textContainer">
+    <span class="pre">{{pre}}</span>
+    <span class="cur" [innerHTML]="cur" *ngIf="!highlight"></span>
+    <span class="cur highlight" [innerHTML]="cur" *ngIf="highlight"></span>
+    <span class="post">{{post}}</span>
+  </div>
+
+  <div class="container">
+    <mat-form-field class="example-full-width" appearance="fill">
+      <mat-label>Key guess</mat-label>
+      <input matInput placeholder="Enter guess here" [(ngModel)]="guess">
+    </mat-form-field>
+    <mat-slider
+      thumbLabel
+      (input)="onSliderChange($event)"
+      [displayWith]="getSliderText"
+      step="1"
+      min="0"
+      [(ngModel)]="position"
+      [max]="text.length"
+      aria-label="units"></mat-slider>
+  </div>
+
+</div>
