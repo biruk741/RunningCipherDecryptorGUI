@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
+import {Trie} from "./DictionaryTrie";
 
 @Injectable({
   providedIn: 'root'
@@ -8,18 +9,32 @@ import {HttpClient} from "@angular/common/http";
 export class DictionaryService {
 
   data: any;
+  root: Trie = new Trie();
 
   constructor(private http: HttpClient) {
-    this.getJSON().subscribe(data => {
-      this.data = data;
-    });
+    this.getWords()
   }
 
   public getJSON(): Observable<any> {
     return this.http.get("./assets/dictionary.json");
   }
 
-  searchWords(text: string){
+  public getWords() {
+    if (this.data) return this.data;
+    this.getJSON().subscribe(data => {
+      this.data = data;
+      Object.keys(this.data).forEach(key => {
+        this.root.insert(key);
+      });
+    });
+  }
+
+  searchWordsAlt(text: string){
+    let result = this.root.search(text);
+    return result ? result + "": false;
+  }
+
+  searchWords(text: string) {
 
     const BreakException = {};
     let found = '';
@@ -31,10 +46,10 @@ export class DictionaryService {
         Object.keys(this.data).forEach(key => {
           if (key.length < 3) return;
           let index = text.indexOf(key);
-          if (index != -1){
+          if (index != -1) {
             count++;
             found += key
-            if (count >= 1){
+            if (count >= 1) {
               console.log(count)
               throw BreakException
             }

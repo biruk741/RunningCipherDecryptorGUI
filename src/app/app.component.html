@@ -1,8 +1,8 @@
 <div>
   <div class="textContainer">
     <span class="pre">{{pre}}</span>
-    <span class="cur" [innerHTML]="cur" *ngIf="!highlight"></span>
-    <span class="cur highlight" [innerHTML]="cur" *ngIf="highlight"></span>
+    <span (click)="save()" class="cur" [innerHTML]="cur" *ngIf="!highlight"></span>
+    <span (click)="save()" class="cur highlight" [innerHTML]="cur" *ngIf="highlight"></span>
     <span class="post">{{post}}</span>
   </div>
 
@@ -11,6 +11,9 @@
       <mat-label>Key guess</mat-label>
       <input matInput placeholder="Enter guess here" [(ngModel)]="guess">
     </mat-form-field>
+    <button (click)="export()">Export JSON</button>
+    <input type='file' (change)="fileChanged($event)">
+    <button (click)="import()">Import JSON</button>
     <mat-slider
       thumbLabel
       (input)="onSliderChange($event)"
@@ -23,7 +26,10 @@
   </div>
 
   <div class="textContainer">
-    <span class="pre">{{saved}}</span>
+    <h3>Plaintext</h3>
+    <span class="pre">{{savedText}}</span>
+    <h3>Key</h3>
+    <span class="pre">{{savedKey}}</span>
   </div>
 
 </div>

@@ -1,6 +1,7 @@
 import {Component, HostListener} from '@angular/core';
 import {MatSliderChange} from "@angular/material/slider";
 import {DictionaryService} from "./dictionary.service";
+import {saveAs} from "file-saver";
 
 export enum KEY_CODE {
   RIGHT_ARROW = 39,
@@ -9,7 +10,8 @@ export enum KEY_CODE {
 
 interface StorageType {
   position: number,
-  text: string
+  text: string,
+  key: string
 }
 
 const localStorageKey = 'savedKeys'
@@ -25,9 +27,10 @@ export class AppComponent {
   pre = ''
   cur = ''
   post = ''
-  guess = 'burger'
+  guess = 'cryptography'
 
-  saved = 'x'.repeat(this.text.length)
+  savedText = 'x'.repeat(this.text.length)
+  savedKey = 'x'.repeat(this.text.length)
 
   highlight: string | boolean = false
 
@@ -40,7 +43,7 @@ export class AppComponent {
 
   ngOnInit() {
     this.update()
-    this.storage = localStorage.getItem("savedKeys")
+    this.loadStorage();
   }
 
   update() {
@@ -62,27 +65,57 @@ export class AppComponent {
   loadStorage() {
     let oldVal = localStorage.getItem(localStorageKey)
     if (oldVal != null) {
-      let converted: { position: number, text: string }[] = JSON.parse(oldVal)
-      for (let storageItem in converted) {
-        this.saved
+      let converted: StorageType[] = JSON.parse(oldVal)
+      for (let storageItem of converted) {
+        this.savedText = this.addTextToSaved(this.savedText,storageItem.text, storageItem.position)
+        this.savedKey = this.addTextToSaved(this.savedKey,storageItem.key, storageItem.position)
       }
     }
   }
 
-  addTextToSaved(text: string, pos: number){
-    return text.substring(0, pos) + text + text
+  addTextToSaved(text: string, toInsert: string, pos: number){
+    return text.substring(0, pos) + toInsert + text.substring(pos + toInsert.length, text.length)
   }
 
-  saveToStorage(position: number, text: string) {
+  save(){
+    this.saveToStorage(this.position, this.cur, this.guess)
+    this.loadStorage()
+  }
+  file:any;
+
+  fileChanged(e: any) {
+    this.file = e?.target?.files[0];
+  }
+  import(){
+    let fileReader = new FileReader();
+    fileReader.onload = (e) => {
+      if (typeof fileReader.result === "string") {
+        localStorage.setItem(localStorageKey, fileReader.result)
+        console.log("loaded")
+        this.loadStorage();
+      }
+    }
+    fileReader.readAsText(this.file);
+  }
+  export(){
+    let val = localStorage.getItem(localStorageKey)
+    if (!val) return;
+
+    const blob =
+      new Blob([val],
+        {type: "text/plain;charset=utf-8"});
+    saveAs(blob, "exported.json");
+  }
+
+  saveToStorage(position: number, text: string, key: string) {
     let oldVal = localStorage.getItem(localStorageKey)
     if (oldVal == null) {
-      let obj: StorageType = {position, text};
-      localStorage.setItem(localStorageKey, JSON.stringify([
-        obj,
-      ]))
+      let obj: StorageType = {position, text, key};
+      localStorage.setItem(localStorageKey, JSON.stringify([obj]))
     } else {
       let converted: StorageType[] = JSON.parse(oldVal)
-      converted.push({position, text})
+      converted.push({position, text, key})
+      console.log(converted)
       localStorage.setItem(localStorageKey, JSON.stringify(converted))
     }
   }
