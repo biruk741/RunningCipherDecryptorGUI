@@ -11,9 +11,12 @@
       <mat-label>Key guess</mat-label>
       <input matInput placeholder="Enter guess here" [(ngModel)]="guess">
     </mat-form-field>
-    <button (click)="export()">Export JSON</button>
-    <input type='file' (change)="fileChanged($event)">
-    <button (click)="import()">Import JSON</button>
+    <button mat-raised-button color="primary" (click)="export()">Export JSON</button>
+    <div class="flex option center">
+      <input type='file' (change)="fileChanged($event)">
+      <button mat-raised-button color="primary" (click)="import()">Import JSON</button>
+    </div>
+    <button mat-raised-button color="primary" (click)="getBestSuggestions()">Get suggestions for guess</button>
     <mat-slider
       thumbLabel
       (input)="onSliderChange($event)"
@@ -26,6 +29,10 @@
   </div>
 
   <div class="textContainer">
+    <div *ngFor="let entry of bestSuggestions" class="option">
+      <span (click)="saveSuggestion(entry)" class="cur highlight">{{entry.decrypted}}</span>
+      index:{{entry.index}} score: {{entry.score}}
+    </div>
     <h3>Plaintext</h3>
     <span class="pre">{{savedText}}</span>
     <h3>Key</h3>

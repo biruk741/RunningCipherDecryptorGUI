@@ -1,3 +1,7 @@
+interface JointType{
+  foundFullWord: boolean
+  longestLength: number
+}
 export class Trie {
   map:{[key:string]:Trie} = {};
   isWord:boolean = false;
@@ -31,5 +35,33 @@ export class Trie {
       return this.find(word,index+1,letterMap.map[word.charAt(index)])
     }
     return false
+  }
+
+  private findWithLength(word:string,index:number,letterMap:Trie):JointType{
+    if(index == word.length){
+      return {foundFullWord: letterMap.isWord, longestLength: index};
+    }
+    if(letterMap.map[word[index]]){
+      return this.findWithLength(word,index+1,letterMap.map[word.charAt(index)])
+    }
+    return {foundFullWord: false, longestLength: index}
+  }
+
+  public calculateScore(fullWord: string){
+    let index = 0;
+    let score = 1;
+    let rounds = 0;
+    while (index < fullWord.length && rounds < 10){
+      const{
+        longestLength,
+        foundFullWord
+      } = this.findWithLength(fullWord.substring(index, fullWord.length), 0, this)
+      let multiplier = foundFullWord && longestLength > 3 ? 10 : foundFullWord ? 3 : 1;
+
+      index++;
+      score *= longestLength * multiplier;
+      rounds++;
+    }
+    return score;
   }
 }

@@ -37,6 +37,7 @@ export class AppComponent {
   storage: null | string = null
 
   position = 0
+  bestSuggestions: {decrypted: string, score: number, index: number}[] = []
 
   constructor(private dictionaryService: DictionaryService) {
   }
@@ -120,18 +121,19 @@ export class AppComponent {
     }
   }
 
-//   text = text.toLowerCase();
-//   key = key.toLowerCase();
-//   String generated = generateKey(text, key);
-//   String result = "";
-//   for (int i = 0; i < text.length(); i++) {
-//   char cur = text.charAt(i);
-//   char curGen = generated.charAt(i);
-//   int subtracted = (cur - 97) - (curGen - 97);
-//   char encrypted = (char) ((improvedMod(subtracted, 26)) + 97);
-//   result += encrypted;
-// }
-// return result;
+
+  public getBestSuggestions(){
+    let results = []
+    for (let index = 0; index < this.text.length - this.guess.length; index++) {
+      let cur = this.text.substring(index,index+this.guess.length)
+      let decrypted = this.decrypt(cur, this.guess, true)
+      let score = this.dictionaryService.root.calculateScore(decrypted)
+      results.push({decrypted, score, index});
+    }
+    console.log(results)
+    this.bestSuggestions =
+      results?.sort((a,b)=> a.score > b.score ? -1: a.score < b.score ? 1 : 0)?.slice(0,20) || []
+  }
 
 
   generateKey(text: string, key: string) {
@@ -144,7 +146,7 @@ export class AppComponent {
     return finalresult
   }
 
-  decrypt(text: string, key: string) {
+  decrypt(text: string, key: string, skip?: boolean) {
     text = text.toLowerCase()
     key = key.toLowerCase()
     let generated = this.generateKey(text, key)
@@ -158,7 +160,7 @@ export class AppComponent {
       )
       result += encrypted;
     }
-    return this.formatWords(result)
+    return skip ? result : this.formatWords(result)
   }
 
   private formatWords(result: string) {
@@ -193,5 +195,11 @@ export class AppComponent {
   decrement() {
     this.position--;
     this.update()
+  }
+
+  saveSuggestion(entry: { decrypted: string; score: number; index: number }) {
+    const{decrypted, index} = entry
+    this.saveToStorage(index, decrypted, this.guess)
+    this.loadStorage()
   }
 }
